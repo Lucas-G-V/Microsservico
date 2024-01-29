@@ -29,6 +29,7 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Pr
 builder.Services.AddScoped<IAutorRepository, AutorRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IRequestHandler<CriarAutorCommand, ValidationResult>, NoticiasCommandHandler>();
+builder.Services.AddScoped<IRequestHandler<AlterarAutorCommand, ValidationResult>, NoticiasCommandHandler>();
 builder.Services.AddScoped<IMediatrHandler, MediatorHandler>();
 builder.Services.AddScoped<NoticiaDbContext>();
 

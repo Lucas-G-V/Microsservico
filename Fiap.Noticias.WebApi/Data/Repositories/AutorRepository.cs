@@ -21,6 +21,12 @@ namespace Fiap.Noticias.WebApi.Data.Repositories
             return await SaveChanges();
         }
 
+        public async Task<int> Update(Autor autor)
+        {
+            _dbSet.Update(autor);
+            return await SaveChanges();
+        }
+
         public async Task<int> SaveChanges()
         {
             return await _db.SaveChangesAsync();
@@ -29,6 +35,11 @@ namespace Fiap.Noticias.WebApi.Data.Repositories
         public void Dispose()
         {
             _db?.Dispose();
+        }
+
+        public async Task<Autor> GetByEmail(string email)
+        {
+            return await _dbSet.FirstOrDefaultAsync(x => x.Email == email);
         }
     }
 }

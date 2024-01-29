@@ -24,6 +24,9 @@ namespace Fiap.Noticias.WebApi.Services
             _bus.RespondAsync<UsuarioCriadoIntegrationEvent, ResponseIntegrationEvent>(async request =>
             await CriarAutor(request));
 
+            _bus.SubscribeAsync<AlterarUsuarioIntegrationEvent>("AlterarUsuario", async request =>
+            await AlterarAutor(request));
+
             return Task.CompletedTask;
         }
 
@@ -39,6 +42,18 @@ namespace Fiap.Noticias.WebApi.Services
             }
 
             return new ResponseIntegrationEvent(sucesso);
+        }
+
+        private async Task AlterarAutor(AlterarUsuarioIntegrationEvent autor)
+        {
+            var clienteCommand = new AlterarAutorCommand(autor.Nome, autor.Email, autor.DataNascimento);
+            ValidationResult sucesso;
+
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var mediator = scope.ServiceProvider.GetRequiredService<IMediatrHandler>();
+                sucesso = await mediator.EnviarNovoComando(clienteCommand);
+            }
         }
     }
 }

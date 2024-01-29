@@ -31,11 +31,12 @@ namespace Fiap.Autenticacao.WebApi.Controllers
             };
 
             await UserManager.CreateAsync(userIndentity, usuario.Senha);
-            await CriarNovoAutor(usuario);
+            var criaAutor = await CriarNovoAutor(usuario);
+            if(!criaAutor) return BadRequest("Erro no retorno");
             return NoContent();
         }
 
-        private async Task CriarNovoAutor(UsuarioNovaContaDto usuario)
+        private async Task<bool> CriarNovoAutor(UsuarioNovaContaDto usuario)
         {
             var result = await _bus.RequestAsync<UsuarioCriadoIntegrationEvent, ResponseIntegrationEvent>(new UsuarioCriadoIntegrationEvent(
                 usuario.Nome, usuario.Email, usuario.Senha, usuario.SenhaConfirmacao, usuario.DataNascimento));
@@ -43,7 +44,31 @@ namespace Fiap.Autenticacao.WebApi.Controllers
             {
                 var usuarioBanco = await UserManager.FindByEmailAsync(usuario.Email);
                 await UserManager.DeleteAsync(usuarioBanco);
+                return false;
             }
+            return true;
+        }
+
+        [HttpPut("alterar-usuario")]
+        public async Task<ActionResult> AlterarNovaConta(UsuarioAlterarInformacoesDto usuario)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var userIndentity = new IdentityUser
+            {
+                UserName = usuario.Email,
+                Email = usuario.Email,
+                EmailConfirmed = true,
+            };
+
+            await UserManager.ChangePasswordAsync(userIndentity, usuario.Senha, usuario.SenhaNova);
+            await AlterarAutor(usuario);
+            return NoContent();
+        }
+
+        private async Task AlterarAutor(UsuarioAlterarInformacoesDto usuario)
+        {
+            await _bus.PublishAsync<AlterarUsuarioIntegrationEvent>(new AlterarUsuarioIntegrationEvent(
+                usuario.Nome, usuario.Email, usuario.DataNascimento));
         }
     }
 }
